@@ -179,7 +179,6 @@ if __name__ == '__main__':
     # 合并url 和 bill
     dataset_data = {**url_data, **bill_data}
     dataset = DataSet(**dataset_data)
-
     dataset.insert()
     # res = URL(url_model).get_url()
     # print(res)

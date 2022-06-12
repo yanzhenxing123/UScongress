@@ -9,7 +9,7 @@ import time
 import sys
 from lxml import etree
 import undetected_chromedriver as uc
-from models.models import URLModel, URL, Bill
+from models.models import URLModel, URL, Bill, DataSet
 from typing import Dict, Optional, List
 from loguru import logger
 
@@ -68,19 +68,12 @@ def parse_all(html):
         # try:
         # 解析
         item = parse_item(item_element)
-        logger.info(item)
-        sys.exit(0)
-        res.append(item)
-
         # 插入数据库
-        bill = Bill(**item)
-        bill.insert()
+        # bill = Bill(**item)
+        res.append(item)
         # except Exception as e:
         #     logger.error(e)
-        count += 1
-        if count % 50 == 0 and count != 0:
-            logger.info(f"已经插入了{count}条数据...")
-    count = 0
+
     return res
 
 
@@ -141,12 +134,29 @@ def parse_item(item_element):
     return item
 
 
+def insert(bills: List[Dict], url_data):
+    """
+    插入数据库
+    :param bills:
+    :param url_model:
+    :return:
+    """
+    global count
+    for bill in bills:
+        dataset_data = {**bill, **url_data}
+        dataset = DataSet(**dataset_data)
+        dataset.insert()
+        count += 1
+        if count % 50 == 0 and count != 0:
+            logger.info(f"已经插入了{count}条数据...")
+    count = 0
+
+
 def main(data: Optional[Dict]):
     """
     main函数
     :return:
     """
-
     # with open("health_care_demo.txt") as f:
     #     text = f.read()
     #     html = etree.HTML(text)
@@ -160,6 +170,8 @@ def main(data: Optional[Dict]):
     logger.info('html爬取完成，正在进行解析...')
     # 解析数据
     items = parse_all(html)
+    # 插入数据库
+    insert(items, data)
     logger.info('html解析存储完成, done ~ ')
 
 
