@@ -4,8 +4,11 @@
 @Description: 
 """
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Any
+
+import utils
 from config import db
+from loguru import logger
 
 conn = db.MysqlConn.get_conn()
 
@@ -15,12 +18,12 @@ class URLModel(BaseModel):
     URL模型类
     """
 
-    congressGroup: List[int] = Field(None, description="{1973-2022, 1951-1972, 1799-1811, 1813-1873}, [1, 2, 3]")
+    congressGroup: List[int] = Field(None, description="{1973-2022, 1951-1972, 1799-1811, 1813-1873}, [0, 1, 2]")
     congress: List[int] = Field(None, description="国会", alias='congresses[]')
     legislationNumbers: str = Field(None, description="eg: hr5")
     restrictionType: str = Field('field', description="restrictionType")
-    restrictionFields: List[str] = Field(['allBillTitles', 'summary'], description="restrictionType", alias='restrictionFields[]')
-    summaryField: str = Field('billSummary')
+    restrictionFields: List[str] = Field(['allBillTitles', 'summary'], description='', alias='restrictionFields[]')
+    summaryField: str = Field('billSummary', description='')
     enterTerms: str = Field(None, description='输入的关键词')
     legislationTypes: List[str] = Field(None, description='', alias='legislationTypes[]')
     public: bool = Field(True, description='')
@@ -65,6 +68,9 @@ class URL:
 
 
 class Bill(BaseModel):
+    """
+    法案类
+    """
     bill_id: int = Field(None, description='')
     type: str = Field(None, description='')
     tracker: str = Field(None, description='')
@@ -74,9 +80,14 @@ class Bill(BaseModel):
     sponsor: str = Field(None, description='', alias='Sponsor')
     sponsor_url: str = Field(None, description='', alias='Sponsor_url')
     cosponsors: int = Field(None, description='', alias='Cosponsors')
-    latest_action: str = Field(None, description='', alias='Latest Action')
+    latest_action: Any = Field(None, description='', alias='Latest Action')
 
     def insert(self, table: str = 'bill'):
+        """
+        插入数据库
+        :param table:
+        :return:
+        """
         data = self.dict()
         data.pop('bill_id')
         keys = ','.join(data.keys())
@@ -87,6 +98,32 @@ class Bill(BaseModel):
         cursor = conn.cursor()
         if cursor.execute(sql, tuple(data.values())):
             conn.commit()
+
+
+class DataSet(URLModel, Bill):
+    """
+    数据库类 = URLModel + Bill
+    """
+
+    def insert(self, table: str = 'bill'):
+        """
+        插入数据库
+        :param table:
+        :return:
+        """
+        data = self.dict()
+        data = utils.format_dataset(data)
+        keys = ','.join(data.keys())
+        values = ','.join(['%s'] * len(data))
+        sql = 'INSERT INTO ' \
+              '{table} ({keys}) ' \
+              'VALUES({values})'.format(table=table, keys=keys, values=values)
+        cursor = conn.cursor()
+        try:
+            if cursor.execute(sql, tuple(data.values())):
+                conn.commit()
+        except Exception as e:
+            logger.error(e.__str__())
 
 
 class JsonResponse(object):
@@ -116,8 +153,8 @@ class JsonResponse(object):
 
 
 if __name__ == '__main__':
-    data = {
-        'congress_group': 1,
+    url_data = {
+        'congressGroup': [0, 1],
         'congress': None,
         'member': None,
         'legislationNumbers': None,
@@ -125,6 +162,24 @@ if __name__ == '__main__':
         'actionTerms': 8000,
         'satellite': None,
     }
-    url_model = URLModel(**data)
-    res = URL(url_model).get_url()
-    print(res)
+
+    bill_data = {
+        'bill_id': '1', 'type': 'RESOLUTION', 'tracker': 'Agreed to in House',
+        'heading': 'H.Res.838 — 117th Congress (2021-2022)',
+        'bill_url': 'https://www.congress.gov//bill/117th-congress/house-resolution/838',
+        'title': 'Providing for consideration of the bill (H.R. 5314) to protect our democracy by preventing abuses of presidential power, restoring checks and balances and accountability and transparency in government, and defending elections against foreign interference, and for other purposes; providing for consideration of the bill (S. 1605) to designate the National Pulse Memorial located at 1912 South Orange Avenue in Orlando, Florida, and for other purposes; and providing for consideration of the bill (S. 610) to address behavioral health and well-being among health care professionals.',
+        'Sponsor_url': 'https://www.congress.gov//member/mary-scanlon/S001205',
+        'Sponsor': ' Rep. Scanlon, Mary Gay [D-PA-5] (Introduced 12/07/2021) ', 'Cosponsors': '0',
+        'Committees': ' House - Rules        ', 'Committee Report': ' H. Rept. 117-205        ',
+        'Latest Action': "dda"
+    }
+
+    url_model = URLModel(**url_data)
+    bill = Bill(**bill_data)
+    # 合并url 和 bill
+    dataset_data = {**url_data, **bill_data}
+    dataset = DataSet(**dataset_data)
+
+    dataset.insert()
+    # res = URL(url_model).get_url()
+    # print(res)

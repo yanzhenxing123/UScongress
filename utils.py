@@ -85,3 +85,19 @@ def filter_text(text: str):
 
 def url_intput_orders():
     pass
+
+
+def format_dataset(data: Dict):
+    """
+    对要插入bill的数据进行格式化
+    :param data:
+    :return:
+    """
+    data.pop('bill_id')  # 删除 bill_id字段
+    data['members'] = data.pop('member')  # 用members代替member
+    for key, value in data.items():
+        if isinstance(value, list):
+            data[key] = str(value)
+        else:
+            data[key] = value
+    return data

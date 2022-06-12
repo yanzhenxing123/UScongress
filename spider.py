@@ -6,6 +6,7 @@
 import re
 import utils
 import time
+import sys
 from lxml import etree
 import undetected_chromedriver as uc
 from models.models import URLModel, URL, Bill
@@ -27,6 +28,7 @@ root_url = "https://www.congress.gov/"
 url = "https://www.congress.gov/search?q=%7B%22congress%22%3A%5B%22117%22%5D%2C%22source%22%3A%22all%22%2C%22search%22%3A%22health%20care%22%7D"
 
 count = 0
+
 
 def req(url: str):
     """
@@ -66,6 +68,8 @@ def parse_all(html):
         # try:
         # 解析
         item = parse_item(item_element)
+        logger.info(item)
+        sys.exit(0)
         res.append(item)
 
         # 插入数据库
@@ -142,15 +146,6 @@ def main(data: Optional[Dict]):
     main函数
     :return:
     """
-    # data = {
-    #     'congress_group': 1,
-    #     'congress': None,
-    #     'member': None,
-    #     'legislationNumbers': None,
-    #     'enterTerms': 'health care',
-    #     'actionTerms': 8000,
-    #     'satellite': None,
-    # }
 
     # with open("health_care_demo.txt") as f:
     #     text = f.read()
@@ -168,6 +163,14 @@ def main(data: Optional[Dict]):
     logger.info('html解析存储完成, done ~ ')
 
 
-#
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    data = {
+        'congress_group': 1,
+        'congress': None,
+        'member': None,
+        'legislationNumbers': None,
+        'enterTerms': 'health care',
+        'actionTerms': 8000,
+        'satellite': None,
+    }
+    main(data)
