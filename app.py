@@ -32,6 +32,7 @@ def crawl():
     data = {}
     for key in form:
         data[key] = form.getlist(key) if '[]' in key else form.get(key)
+    data['crawl_nums'] = int(data['crawl_nums'])
     # 异步爬取数据
     pool.submit(spider.main, data)
     return JsonResponse.success()
