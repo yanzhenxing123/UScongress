@@ -95,6 +95,7 @@ class Bill(BaseModel):
     sponsor: str = Field(None, description='', alias='Sponsor')
     sponsor_url: str = Field(None, description='', alias='Sponsor_url')
     cosponsors: int = Field(None, description='', alias='Cosponsors')
+    committees: str = Field(None, description='', alias='Committees')
     latest_action: Any = Field(None, description='', alias='Latest Action')
 
     def insert(self, table: str = 'bill'):
