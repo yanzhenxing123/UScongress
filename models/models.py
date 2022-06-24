@@ -19,7 +19,7 @@ class URLModel(BaseModel):
     """
 
     congressGroup: List[int] = Field(None, description="{1973-2022, 1951-1972, 1799-1811, 1813-1873}, [0, 1, 2]")
-    congress: List[int] = Field(None, description="国会", alias='congresses[]')
+    congresses: List[int] = Field(None, description="国会", alias='congresses[]')
     legislationNumbers: str = Field(None, description="eg: hr5")
     restrictionType: str = Field('field', description="restrictionType")
     restrictionFields: List[str] = Field(['allBillTitles', 'summary'], description='', alias='restrictionFields[]')
@@ -35,6 +35,10 @@ class URLModel(BaseModel):
     submitted: str = Field('Submitted', description='')
     member: str = Field(None, description='提出人')
     actionTerms: int = Field(None, description='法案所处的阶段 eg: 8000')
+
+    # query中的数据
+    query_party: List[str] = Field(None, description="party", alias="query_party[]")
+    query_bill_status: List[str] = Field(None, description="bill_status", alias="query_bill-status[]")
 
 
 class URL:
@@ -52,17 +56,28 @@ class URL:
         :return:
         """
         res_li = []
+        q = {}  # query
         url_dict = self.url_model.dict()
-        for key in url_dict.keys():
+        for key, value in url_dict.items():
             value = url_dict.get(key)
             if not value:
                 continue
+            # 处理 q 字段
+            elif key.startswith("query_"):
+                if "bill_status" in key:
+                    q['bill-status'] = value
+                elif "party" in key:
+                    q['party'] = value
+            # 数组类型
             elif isinstance(value, List):
                 key = key + "[]"
                 for item in value:
                     res_li.append(key + "=" + str(item))
+            # 常规类型
             else:
                 res_li.append(key + "=" + str(value))
+        if q:
+            res_li.append("q=" + str(q).replace("'", '"'))
         res_str = "&".join(res_li)
         return self.base_url + res_str
 

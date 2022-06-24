@@ -32,9 +32,12 @@ url = "https://www.congress.gov/search?q=%7B%22congress%22%3A%5B%22117%22%5D%2C%
 
 
 class Spider:
+    """
+    Spider类
+    """
     driver_executable_path = utils.get_project_path() + '\\config\\chromedriver.exe'
 
-    def __init__(self, url_data):
+    def __init__(self, url_data: Dict):
         self.driver = uc.Chrome(
             version_main=95,
             driver_executable_path=Spider.driver_executable_path,
@@ -42,8 +45,7 @@ class Spider:
         )
         self.url_data = url_data
         self.url = self.get_url(self.url_data)
-        self.count = 0  # 记录数据插入条数
-        # 爬取的页数
+        self.count = 0
         self.page_count = 0
 
     def get_url(self, url_data: Dict) -> str:
@@ -94,7 +96,6 @@ class Spider:
         :param html:
         :return:
         """
-        # res = []
         main_element = html.xpath("//div[@id='main']")[0]
         item_elements = main_element.xpath("./ol/li[@class='expanded']")
         for item_element in item_elements:
@@ -102,11 +103,6 @@ class Spider:
             item = self.parse_item(item_element)
             # 插入数据库
             self.insert(item, self.url_data)
-            # res.append(item)
-            self.count += 1
-            if self.count % 50 == 0 and self.count != 0:
-                logger.info(f"已经插入了{self.count}条数据...")
-        # return res
 
     def parse_item(self, item_element):
         """
@@ -166,7 +162,7 @@ class Spider:
 
     def insert(self, bill: Dict, url_data: Dict):
         """
-        插入数据库
+        插入数据库: 单个插入后面可优化
         :param bills:
         :param url_model:
         :return:
@@ -174,6 +170,9 @@ class Spider:
         dataset_data = {**bill, **url_data}
         dataset = DataSet(**dataset_data)
         dataset.insert()
+        self.count += 1
+        if self.count % 50 == 0 and self.count != 0:
+            logger.info(f"已经插入了{self.count}条数据...")
 
 
 def main(data: Optional[Dict]):
