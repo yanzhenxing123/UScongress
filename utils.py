@@ -8,7 +8,7 @@ import re
 from typing import Dict
 from urllib.parse import quote, unquote
 
-root_url = "https://www.congress.gov/"
+root_url = "https://www.congress.gov"
 
 
 def get_project_path():
