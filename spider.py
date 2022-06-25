@@ -15,14 +15,10 @@ import undetected_chromedriver as uc
 import crawl_bill
 from typing import Dict, Optional, List
 from loguru import logger
-
 from models.models import URLModel, URL, DataSet
 
 options = uc.ChromeOptions()
 # 线程池
-pool = ThreadPoolExecutor(max_workers=3)
-
-
 ROOT_PATH = utils.get_project_path()
 
 headers = {
@@ -183,8 +179,7 @@ class Spider:
         if self.count % 50 == 0 and self.count != 0:
             logger.info(f"已经插入了{self.count}条数据...")
             if self.count == 50:
-                pool.submit(crawl_bill.main)
-
+                utils.pool.submit(crawl_bill.main)
 
 
 def main(data: Optional[Dict]):

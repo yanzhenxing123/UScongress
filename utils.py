@@ -5,11 +5,14 @@
 """
 import os
 import re
+from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Dict
 from urllib.parse import quote, unquote
 
 root_url = "https://www.congress.gov"
 
+# 线程池
+pool = ThreadPoolExecutor(max_workers=3)
 
 def get_project_path():
     """
