@@ -15,6 +15,9 @@ import undetected_chromedriver as uc
 from models.models import URLModel, URL, Bill, DataSet
 from typing import Dict, Optional, List
 from loguru import logger
+options = uc.ChromeOptions()
+
+
 
 ROOT_PATH = utils.get_project_path()
 
@@ -41,12 +44,13 @@ class Spider:
         self.driver = uc.Chrome(
             version_main=95,
             driver_executable_path=Spider.driver_executable_path,
-            browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe'
+            browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
         )
         self.url_data = url_data
         self.url = self.get_url(self.url_data)
         self.count = 0
         self.page_count = 0
+        self.items = []
 
     def get_url(self, url_data: Dict) -> str:
         """
@@ -71,16 +75,18 @@ class Spider:
         # res = driver.find_element_by_xpath("//div[@id='main']/ol/li[@class='expanded']//span[@class='result-heading']/a")
         # res.click()
         while True:
+            time.sleep(5)
             self.page_count += 1
             text = self.driver.page_source
             html = etree.HTML(text)
+            # res = self.driver.find_element(by=By.XPATH, value=".//li[@class='expanded']//span[@class='result-heading']/a[1]")
+            # res.click()
             logger.info(f"正在爬取第{self.page_count}页...")
             # 解析并插入数据
             self.parse_all(html)
-
             if self.count == max_num:
                 logger.info(" 爬取已完成 done~~~~")
-                self.driver.quit()
+                # self.driver.quit()
                 break
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
             if not next:
@@ -90,6 +96,9 @@ class Spider:
             next.click()
             time.sleep(delay)
 
+    def crawl_bill_txt_and_cosponsors(self):
+        pass
+
     def parse_all(self, html):
         """
         解析整个页面的html
@@ -98,11 +107,13 @@ class Spider:
         """
         main_element = html.xpath("//div[@id='main']")[0]
         item_elements = main_element.xpath("./ol/li[@class='expanded']")
-        for item_element in item_elements:
+        for i in range(len(item_elements)):
             # 解析
-            item = self.parse_item(item_element)
+            item = self.parse_item(item_elements[i])
+            self.items.append(item)
             # 插入数据库
             self.insert(item, self.url_data)
+        # self.crawl_bill_txt_and_cosponsors()
 
     def parse_item(self, item_element):
         """
@@ -120,6 +131,7 @@ class Spider:
         heading = "".join(heading_text)
         # 法案的bill_url, 详细信息
         bill_url = item_element.xpath(".//span[@class='result-heading']/a/@href")
+
         bill_url = utils.format_url(bill_url[0]) if bill_url else ''
         # 法案的title, eg: Health Care Worker and First Responder Social Security Beneficiary Choice Act of 2022
         title_text = item_element.xpath(".//span[@class='result-title']//text()")
@@ -175,6 +187,7 @@ class Spider:
             logger.info(f"已经插入了{self.count}条数据...")
 
 
+
 def main(data: Optional[Dict]):
     """
     main函数
@@ -196,6 +209,6 @@ if __name__ == '__main__':
         'enterTerms': 'health care',
         'actionTerms': 8000,
         'satellite': None,
-        'craw_nums': 200
+        'crawl_nums': 200
     }
     main(data)

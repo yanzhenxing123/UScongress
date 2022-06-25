@@ -8,3 +8,4 @@ with open(base_path + "\\config\\config.yaml", encoding="utf-8") as file:
     MONGO = Config.get('Mongo')
     Kafka = Config.get('Kafka')
     Mysql = Config.get('Mysql')
+    Redis = Config.get('Redis')

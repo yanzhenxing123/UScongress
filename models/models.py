@@ -4,13 +4,14 @@
 @Description: 
 """
 from pydantic import BaseModel, Field
-from typing import List, Any
+from typing import List, Any, Dict
 
 import utils
 from config import db
 from loguru import logger
 
 conn = db.MysqlConn.get_conn()
+redis = db.Redis.get_conn()
 
 
 class URLModel(BaseModel):
@@ -137,9 +138,23 @@ class DataSet(URLModel, Bill):
         cursor = conn.cursor()
         try:
             if cursor.execute(sql, tuple(data.values())):
+                # 插入bill到redis
+                self.insert_bill_url_to_redis(str(cursor.lastrowid), data)
                 conn.commit()
+
         except Exception as e:
             logger.error(e.__str__())
+
+    def insert_bill_url_to_redis(self, bill_id: str, data: Dict):
+        """
+        插入bill到redis
+        :param bill_id:
+        :param data:
+        :return:
+        """
+        bill_url = data.get('bill_url')
+        if bill_url:
+            redis.set("bill_url_" + bill_id, bill_url)
 
 
 class JsonResponse(object):

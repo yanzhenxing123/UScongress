@@ -1,6 +1,8 @@
 import random
 
 import pymongo
+import redis
+
 from config import config
 from typing import List
 from confluent_kafka import Consumer as KafkaConsumer
@@ -75,3 +77,30 @@ class MysqlConn:
         except Exception as e:
             logger.error(e)
             return None
+
+
+class Redis:
+    pwd = config.Redis['pwd']
+    host = config.Redis['host']
+    port = config.Redis['port']
+    database = config.Redis['database']
+
+    pool = redis.ConnectionPool(host=host,
+                                port=port,
+                                password=pwd,
+                                db=database,
+                                decode_responses=True
+                                )  # host是redis主机，需要redis服务端和客户端都起着 redis默认端口是6379
+
+    @classmethod
+    def get_conn(cls):
+        try:
+            redis_conn = redis.Redis(connection_pool=cls.pool)
+            return redis_conn
+        except Exception as e:
+            logger.error(e)
+            return None
+
+
+if __name__ == '__main__':
+    conn = Redis.get_conn()

@@ -10,10 +10,13 @@ from models.models import JsonResponse
 
 app = JsonFlask(__name__)
 
+
 # 解决路径问题
-cur_path = os.path.abspath(os.path.dirname(__file__))
-root_path = os.path.split(cur_path)[0]
-sys.path.append(root_path)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(base_dir)
+# cur_path = os.path.abspath(os.path.dirname(__file__))
+# root_path = os.path.split(cur_path)[0]
+# sys.path.append(root_path)
 
 # 线程池
 pool = ThreadPoolExecutor(max_workers=3)

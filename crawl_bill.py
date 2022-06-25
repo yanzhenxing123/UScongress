@@ -1,3 +1,9 @@
+"""
+@Author: yanzx
+@Date: 2022/6/25 13:46
+@Description: 脚本爬取bill_text
+"""
+
 import time
 import utils
 from lxml import etree
@@ -81,8 +87,8 @@ def main():
             # 先请求bill_text
             driver.get(bill_text_url)
             if count == 0:
-                time.sleep(5)
-            time.sleep(3)
+                time.sleep(6)
+            time.sleep(2.5)
             count += 1
 
             bill_text_html = etree.HTML(driver.page_source)
@@ -93,7 +99,7 @@ def main():
             bill_cosponsor_element = driver.find_element(By.XPATH,
                                                          value="//body/div[@id='container']/div[1]/main[1]/nav[1]/ul[1]/li[6]/h2[1]/a[1]")
             bill_cosponsor_element.click()
-            time.sleep(2)
+            time.sleep(1.5)
             bill_cosponsor_html = etree.HTML(driver.page_source)
             cosponsor_names = bill_cosponsor_html.xpath("//td[@class='actions']/a/text()")
             cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"

@@ -18,3 +18,9 @@ Mysql:
   host: "127.0.0.1"
   port: 3306
   database: "us_congress"
+
+Redis:
+  host: "42.192.178.84"
+  pwd: "209243"
+  port: 6379
+  database: 0
