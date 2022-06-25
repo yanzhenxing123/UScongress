@@ -7,9 +7,7 @@
 import time
 import utils
 from lxml import etree
-from typing import Dict
 from config import db
-from spider import Spider
 from loguru import logger
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
@@ -41,7 +39,7 @@ def get_driver():
     """
     driver = uc.Chrome(
         version_main=95,
-        driver_executable_path=Spider.driver_executable_path,
+        driver_executable_path=utils.get_driver_executable_path(),
         browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
     )
     return driver

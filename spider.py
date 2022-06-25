@@ -4,19 +4,23 @@
 @Description: main函数
 """
 import re
+from concurrent.futures.thread import ThreadPoolExecutor
 
 from selenium.webdriver.common.by import By
-
 import utils
 import time
 import sys
 from lxml import etree
 import undetected_chromedriver as uc
-from models.models import URLModel, URL, Bill, DataSet
+import crawl_bill
 from typing import Dict, Optional, List
 from loguru import logger
-options = uc.ChromeOptions()
 
+from models.models import URLModel, URL, DataSet
+
+options = uc.ChromeOptions()
+# 线程池
+pool = ThreadPoolExecutor(max_workers=3)
 
 
 ROOT_PATH = utils.get_project_path()
@@ -38,19 +42,17 @@ class Spider:
     """
     Spider类
     """
-    driver_executable_path = utils.get_project_path() + '\\config\\chromedriver.exe'
 
     def __init__(self, url_data: Dict):
         self.driver = uc.Chrome(
             version_main=95,
-            driver_executable_path=Spider.driver_executable_path,
+            driver_executable_path=utils.get_driver_executable_path(),
             browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
         )
         self.url_data = url_data
         self.url = self.get_url(self.url_data)
         self.count = 0
         self.page_count = 0
-        self.items = []
 
     def get_url(self, url_data: Dict) -> str:
         """
@@ -72,21 +74,17 @@ class Spider:
         delay = 10
         time.sleep(delay)
         # 法案点进去
-        # res = driver.find_element_by_xpath("//div[@id='main']/ol/li[@class='expanded']//span[@class='result-heading']/a")
-        # res.click()
         while True:
             time.sleep(5)
             self.page_count += 1
             text = self.driver.page_source
             html = etree.HTML(text)
-            # res = self.driver.find_element(by=By.XPATH, value=".//li[@class='expanded']//span[@class='result-heading']/a[1]")
-            # res.click()
             logger.info(f"正在爬取第{self.page_count}页...")
             # 解析并插入数据
             self.parse_all(html)
             if self.count == max_num:
                 logger.info(" 爬取已完成 done~~~~")
-                # self.driver.quit()
+                self.driver.quit()
                 break
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
             if not next:
@@ -110,7 +108,6 @@ class Spider:
         for i in range(len(item_elements)):
             # 解析
             item = self.parse_item(item_elements[i])
-            self.items.append(item)
             # 插入数据库
             self.insert(item, self.url_data)
         # self.crawl_bill_txt_and_cosponsors()
@@ -185,6 +182,8 @@ class Spider:
         self.count += 1
         if self.count % 50 == 0 and self.count != 0:
             logger.info(f"已经插入了{self.count}条数据...")
+            if self.count == 50:
+                pool.submit(crawl_bill.main)
 
 
 
@@ -193,9 +192,6 @@ def main(data: Optional[Dict]):
     main函数
     :return:
     """
-    # with open("health_care_demo.txt") as f:
-    #     text = f.read()
-    #     html = etree.HTML(text)
     spider = Spider(data)
     spider.run(data['crawl_nums'])
 
