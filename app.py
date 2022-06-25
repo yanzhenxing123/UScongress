@@ -12,10 +12,7 @@ app = JsonFlask(__name__)
 # 解决路径问题
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(base_dir)
-
-# 跨域问题
-CORS(app, supports_credentials=True, resources=r'/*')
-
+CORS(app, resources=r'/*')
 
 @app.route('/')
 def hello_world():
@@ -36,4 +33,5 @@ def crawl():
 
 
 if __name__ == '__main__':
+    # 跨域问题
     app.run(host="0.0.0.0", threaded=True, port=5000, debug=False)
