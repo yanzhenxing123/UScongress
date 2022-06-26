@@ -7,8 +7,6 @@ from loguru import logger
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 
-redis_conn = db.Redis.get_conn()
-mysql_conn = db.MysqlConn.get_conn()
 
 sql_f = '''
         UPDATE `bill`
@@ -24,6 +22,10 @@ class CrawlTread(threading.Thread):
     """
     def __init__(self):
         super(CrawlTread, self).__init__()
+        self.mysql_conn = db.MysqlConn.get_conn()
+        self.redis_conn = db.Redis.get_conn()
+
+
 
     def run(self):
         """
@@ -33,7 +35,7 @@ class CrawlTread(threading.Thread):
         driver = utils.get_driver()
         count = 0
         while True:
-            bill_id_and_url_str = redis_conn.brpop("bill_url")[1]
+            bill_id_and_url_str = self.redis_conn.brpop("bill_url")[1]
             bill_id, bill_url = bill_id_and_url_str.split(",")
 
             try:
@@ -77,16 +79,16 @@ class CrawlTread(threading.Thread):
         :param bill_id:
         :return:
         """
-        cursor = mysql_conn.cursor()
+        cursor = self.mysql_conn.cursor()
         sql = sql_f.format(bill_raw_text=bill_raw_text,
                            cosponsor_names=cosponsor_names_str,
                            bill_id=bill_id)
         try:
             if cursor.execute(sql):
                 logger.success(f"插入{bill_id}成功")
-                mysql_conn.commit()
+                self.mysql_conn.commit()
                 # 删除bill_id
-                redis_conn.delete("bill_url_" + bill_id)
+                self.redis_conn.delete("bill_url_" + bill_id)
         except Exception as e:
             logger.error(f"插入{bill_id}失败")
             logger.error(e.__str__())
