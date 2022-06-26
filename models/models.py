@@ -154,7 +154,8 @@ class DataSet(URLModel, Bill):
         """
         bill_url = data.get('bill_url')
         if bill_url:
-            redis.set("bill_url_" + bill_id, bill_url)
+            redis.lpush("bill_url", bill_id + "," + bill_url)
+            # redis.set("bill_url_" + bill_id, bill_url)
 
 
 class JsonResponse(object):

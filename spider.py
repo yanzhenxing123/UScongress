@@ -90,8 +90,6 @@ class Spider:
             next.click()
             time.sleep(delay)
 
-    def crawl_bill_txt_and_cosponsors(self):
-        pass
 
     def parse_all(self, html):
         """
@@ -178,8 +176,6 @@ class Spider:
         self.count += 1
         if self.count % 50 == 0 and self.count != 0:
             logger.info(f"已经插入了{self.count}条数据...")
-            if self.count == 50:
-                utils.pool.submit(crawl_bill.main)
 
 
 def main(data: Optional[Dict]):

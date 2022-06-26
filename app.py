@@ -2,8 +2,8 @@ import os
 import sys
 import spider
 import utils
-from flask import request
-from flask_cors import CORS
+from flask import request, Response, make_response
+from flask_cors import CORS, cross_origin
 from config.json_flask import JsonFlask
 from models.models import JsonResponse
 
@@ -14,12 +14,14 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(base_dir)
 CORS(app, resources=r'/*')
 
+
 @app.route('/')
 def hello_world():
     return 'Hello World!'
 
 
 @app.route('/crawl', methods=['POST'])
+@cross_origin()
 def crawl():
     form = request.form
     data = {}
