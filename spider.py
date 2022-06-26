@@ -40,11 +40,7 @@ class Spider:
     """
 
     def __init__(self, url_data: Dict):
-        self.driver = uc.Chrome(
-            version_main=95,
-            driver_executable_path=utils.get_driver_executable_path(),
-            browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
-        )
+        self.driver = utils.get_driver()
         self.url_data = url_data
         self.url = self.get_url(self.url_data)
         self.count = 0

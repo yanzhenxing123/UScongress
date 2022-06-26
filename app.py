@@ -2,7 +2,7 @@ import os
 import sys
 import spider
 import utils
-from flask import request, Response, make_response
+from flask import request, Response, make_response, jsonify
 from flask_cors import CORS, cross_origin
 from config.json_flask import JsonFlask
 from models.models import JsonResponse
@@ -12,7 +12,7 @@ app = JsonFlask(__name__)
 # 解决路径问题
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(base_dir)
-CORS(app, resources=r'/*')
+CORS(app)
 
 
 @app.route('/')
@@ -21,7 +21,6 @@ def hello_world():
 
 
 @app.route('/crawl', methods=['POST'])
-@cross_origin()
 def crawl():
     form = request.form
     data = {}

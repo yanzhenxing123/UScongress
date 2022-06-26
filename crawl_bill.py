@@ -19,6 +19,9 @@ sql_f = '''
 
 
 class CrawlTread(threading.Thread):
+    """
+    爬虫消费者
+    """
     def __init__(self):
         super(CrawlTread, self).__init__()
 
@@ -27,7 +30,7 @@ class CrawlTread(threading.Thread):
         线程要运行的代码
         :return:
         """
-        driver = self.get_driver()
+        driver = utils.get_driver()
         count = 0
         while True:
             bill_id_and_url_str = redis_conn.brpop("bill_url")[1]
@@ -89,22 +92,12 @@ class CrawlTread(threading.Thread):
             logger.error(e.__str__())
             logger.info(sql)
 
-    def get_driver(self):
-        """
-        获取driver对象
-        :return:
-        """
-        driver = uc.Chrome(
-            version_main=95,
-            driver_executable_path=utils.get_driver_executable_path(),
-            browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
-        )
-        return driver
 
 
 if __name__ == '__main__':
     treads = []
-    for _ in range(5):
+    nums = 3
+    for _ in range(nums):
         c_thread = CrawlTread()
         c_thread.start()
         treads.append(c_thread)
