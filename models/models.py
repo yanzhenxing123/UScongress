@@ -113,8 +113,14 @@ class Bill(BaseModel):
               '{table} ({keys}) ' \
               'VALUES({values})'.format(table=table, keys=keys, values=values)
         cursor = conn.cursor()
-        if cursor.execute(sql, tuple(data.values())):
-            conn.commit()
+        try:
+            conn.ping(reconnect=True)
+            if cursor.execute(sql, tuple(data.values())):
+                conn.commit()
+        except Exception as e:
+            logger.error(f"插入数据异常，{e.__str__()}")
+        finally:
+            cursor.close()
 
 
 class DataSet(URLModel, Bill):
