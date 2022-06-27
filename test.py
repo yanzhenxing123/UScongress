@@ -75,6 +75,7 @@ class CrawlTread(threading.Thread):
         :return:
         """
         cursor = mysql_conn.cursor()
+
         sql = sql_f.format(bill_raw_text=bill_raw_text,
                            cosponsor_names=cosponsor_names_str,
                            bill_id=bill_id)
