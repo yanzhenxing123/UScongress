@@ -105,7 +105,7 @@ class CrawlTread(threading.Thread):
 
 if __name__ == '__main__':
     treads = []
-    for _ in range(5):
+    for _ in range(3):
         c_thread = CrawlTread()
         c_thread.start()
         treads.append(c_thread)
