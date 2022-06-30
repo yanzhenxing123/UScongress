@@ -105,22 +105,7 @@ class Bill(BaseModel):
         :param table:
         :return:
         """
-        data = self.dict()
-        data.pop('bill_id')
-        keys = ','.join(data.keys())
-        values = ','.join(['%s'] * len(data))
-        sql = 'INSERT INTO ' \
-              '{table} ({keys}) ' \
-              'VALUES({values})'.format(table=table, keys=keys, values=values)
-        cursor = conn.cursor()
-        try:
-            conn.ping(reconnect=True)
-            if cursor.execute(sql, tuple(data.values())):
-                conn.commit()
-        except Exception as e:
-            logger.error(f"插入数据异常，{e.__str__()}")
-        finally:
-            cursor.close()
+        pass
 
 
 class DataSet(URLModel, Bill):
@@ -143,13 +128,16 @@ class DataSet(URLModel, Bill):
               'VALUES({values})'.format(table=table, keys=keys, values=values)
         cursor = conn.cursor()
         try:
+            conn.ping(reconnect=True)
             if cursor.execute(sql, tuple(data.values())):
                 # 插入bill到redis
                 self.insert_bill_url_to_redis(str(cursor.lastrowid), data)
                 conn.commit()
-
         except Exception as e:
-            logger.error(e.__str__())
+            logger.error(f"插入数据异常，{e.__str__()}")
+        finally:
+            cursor.close()
+
 
     def insert_bill_url_to_redis(self, bill_id: str, data: Dict):
         """
