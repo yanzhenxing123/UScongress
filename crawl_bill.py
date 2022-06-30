@@ -28,13 +28,13 @@ class CrawlTread(threading.Thread):
         self.mysql_conn = db.MysqlConn.get_conn()
         self.redis_conn = db.Redis.get_conn()
         self.driver = utils.get_driver()
+        self.count = 0
 
     def run(self):
         """
         线程要运行的代码
         :return:
         """
-        count = 0
         while True:
             bill_id_and_url_str = self.redis_conn.brpop("bill_url")[1]
             bill_id, bill_url = bill_id_and_url_str.split(",")
@@ -44,7 +44,7 @@ class CrawlTread(threading.Thread):
                 bill_text_url = bill_url + '/text'
                 # 先请求bill_text
                 self.driver.get(bill_text_url)
-                if count == 0:
+                if self.count == 0:
                     time.sleep(6)
                 time.sleep(2.5)
                 bill_text_html = etree.HTML(self.driver.page_source)
@@ -59,18 +59,15 @@ class CrawlTread(threading.Thread):
                 bill_cosponsor_html = etree.HTML(self.driver.page_source)
                 cosponsor_names = bill_cosponsor_html.xpath("//td[@class='actions']/a/text()")
                 cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"
+                # 插入数据
+                self.insert(bill_raw_text, cosponsor_names_str, bill_id)
+                self.count += 1
 
-            except WebDriverException as ex:
+            except Exception as ex:
                 logger.error("WebDriver异常" + ex.__str__())
                 self.driver.quit()
                 self.driver = utils.get_driver()
-                break
-            except Exception as e:
-                cosponsor_names_str = "''"
-                logger.error("cosponsor_names 获取异常: " + e.__str__())
-
-            self.insert(bill_raw_text, cosponsor_names_str, bill_id)
-            count += 1
+                self.count += 0
 
     def insert(self, bill_raw_text: str, cosponsor_names_str: str, bill_id: str):
         """
@@ -80,7 +77,6 @@ class CrawlTread(threading.Thread):
         :param bill_id:
         :return:
         """
-
         sql = sql_f.format(bill_raw_text=bill_raw_text,
                            cosponsor_names=cosponsor_names_str,
                            bill_id=bill_id)
@@ -90,11 +86,9 @@ class CrawlTread(threading.Thread):
             if cursor.execute(sql):
                 logger.success(f"插入{bill_id}成功")
                 self.mysql_conn.commit()
-                # 删除bill_id
-                self.redis_conn.delete("bill_url_" + bill_id)
+                self.redis_conn.delete("bill_url_" + bill_id)  # 删除bill_id
         except Exception as e:
-            logger.error(f"插入{bill_id}失败, 原因: {e.__str__()}")
-            logger.info(sql)
+            logger.error(f"插入{bill_id}失败, 原因: {e.__str__()}, sql: {sql}")
         finally:
             cursor.close()
 
