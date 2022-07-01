@@ -143,10 +143,13 @@ def get_driver():
 #     获取driver对象
 #     :return:
 #     """
+#     options = uc.ChromeOptions()
+#     options.add_argument('--no-sandbox')
 #     driver = uc.Chrome(
 #         version_main=95,
 #         driver_executable_path=get_driver_executable_path(),
 #         browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
+#         options=options
 #     )
 #     return driver
 

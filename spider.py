@@ -29,6 +29,7 @@ class Spider:
         self.url = self.get_url(self.url_data)
         self.count = 0
         self.page_count = 0
+        self.max_count = 100
 
     def get_url(self, url_data: Dict) -> str:
         """
@@ -63,7 +64,7 @@ class Spider:
                 self.driver.quit()
                 break
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
-            if not next:
+            if not next or self.page_count >= self.max_count:
                 logger.info("====== 没找到下一页 ======")
                 self.driver.quit()
                 break
