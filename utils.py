@@ -5,10 +5,11 @@
 """
 import os
 import re
-from concurrent.futures.thread import ThreadPoolExecutor
+import undetected_chromedriver as uc
 from typing import Dict
 from urllib.parse import quote, unquote
-import undetected_chromedriver as uc
+from concurrent.futures.thread import ThreadPoolExecutor
+
 
 root_url = "https://www.congress.gov"
 
