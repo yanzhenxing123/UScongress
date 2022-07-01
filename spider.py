@@ -4,34 +4,18 @@
 @Description: main函数
 """
 import re
-from concurrent.futures.thread import ThreadPoolExecutor
-
 from selenium.webdriver.common.by import By
 import utils
 import time
-import sys
 from lxml import etree
 import undetected_chromedriver as uc
-import crawl_bill
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 from loguru import logger
 from models.models import URLModel, URL, DataSet
 
 options = uc.ChromeOptions()
 # 线程池
 ROOT_PATH = utils.get_project_path()
-
-headers = {
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
-    'authority': 'www.congress.gov',
-    'cookie': 'PHPSESSID=a7fcba14bdd6a778d96a748929357be9; AMCVS_0D15148954E6C5100A4C98BC%40AdobeOrg=1; quickSearchFormExpanded=0; KWICViewExpanded-advanced-search-legislation=true; KWICViewCompact-advanced-search-legislation=false; KWICViewExpanded-search=true; KWICViewCompact-search=false; AMCV_0D15148954E6C5100A4C98BC%40AdobeOrg=-1124106680%7CMCIDTS%7C19131%7CMCMID%7C58532803776396922704760696810774771296%7CMCOPTOUT-1652894103s%7CNONE%7CvVersion%7C5.2.0',
-    'sec-ch-ua-platform': "Windows",
-    'sec-ch-ua-mobile': '?0'
-}
-
-root_url = "https://www.congress.gov"
-
-url = "https://www.congress.gov/search?q=%7B%22congress%22%3A%5B%22117%22%5D%2C%22source%22%3A%22all%22%2C%22search%22%3A%22health%20care%22%7D"
 
 
 class Spider:
@@ -85,7 +69,6 @@ class Spider:
                 break
             next.click()
             time.sleep(delay)
-
 
     def parse_all(self, html):
         """
