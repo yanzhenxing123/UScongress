@@ -132,3 +132,5 @@ nohup.out
 
 # 日志
 logs/
+
+test.py

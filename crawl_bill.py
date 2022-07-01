@@ -1,13 +1,9 @@
 import time
-
-from selenium.common.exceptions import WebDriverException
-
 import utils
-from lxml import etree
 import threading
 from config import db
+from lxml import etree
 from loguru import logger
-import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 
 sql_f = '''
@@ -67,7 +63,7 @@ class CrawlTread(threading.Thread):
                 logger.error("WebDriver异常" + ex.__str__())
                 self.driver.quit()
                 self.driver = utils.get_driver()
-                self.count += 0
+                self.count = 0
 
     def insert(self, bill_raw_text: str, cosponsor_names_str: str, bill_id: str):
         """
