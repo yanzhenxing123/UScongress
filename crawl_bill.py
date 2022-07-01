@@ -45,7 +45,7 @@ class CrawlTread(threading.Thread):
                 time.sleep(2.5)
                 bill_text_html = etree.HTML(self.driver.page_source)
                 bill_raw_text = "'" + "".join(
-                    bill_text_html.xpath("//div[@class='generated-html-container ']//text()")) \
+                    bill_text_html.xpath("//div[@class='bill-summary']//text()")) \
                     .replace("'", "") + "'"
                 # 请求bill_cosponsor
                 bill_cosponsor_element = self.driver.find_element(By.XPATH,
