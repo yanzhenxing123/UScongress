@@ -120,35 +120,35 @@ def get_driver_executable_path():
     return get_project_path() + '\\config\\chromedriver.exe'
 
 
-# def get_driver():
-#     options = uc.ChromeOptions()
-#     options.add_argument("--headless")
-#     options.add_argument('whitelisted-ips')
-#     options.add_argument("no-sandbox")
-#     options.add_argument("disable-dev-shm-usage")
-#     options.add_argument("--disable-extensions")
-#     options.add_argument("enable-automation")
-#     options.add_argument("--disable-browser-side-navigation")
-#     options.add_argument("--disable-web-security")
-#     options.add_argument("--disable-dev-shm-usage")
-#     options.add_argument("--disable-infobars")
-#     options.add_argument("--disable-gpu")
-#     driver = uc.Chrome(version_main=103, options=options)
-#
-#     return driver
-
-
 def get_driver():
-    """
-    获取driver对象
-    :return:
-    """
-    driver = uc.Chrome(
-        version_main=95,
-        driver_executable_path=get_driver_executable_path(),
-        browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
-    )
+    options = uc.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument('whitelisted-ips')
+    options.add_argument("no-sandbox")
+    options.add_argument("disable-dev-shm-usage")
+    options.add_argument("--disable-extensions")
+    options.add_argument("enable-automation")
+    options.add_argument("--disable-browser-side-navigation")
+    options.add_argument("--disable-web-security")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--disable-gpu")
+    driver = uc.Chrome(version_main=103, options=options)
+
     return driver
+
+
+# def get_driver():
+#     """
+#     获取driver对象
+#     :return:
+#     """
+#     driver = uc.Chrome(
+#         version_main=95,
+#         driver_executable_path=get_driver_executable_path(),
+#         browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
+#     )
+#     return driver
 
 
 if __name__ == '__main__':
