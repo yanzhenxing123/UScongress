@@ -33,7 +33,7 @@ class CrawlTread(threading.Thread):
         """
         while True:
             bill_id_and_url_str = self.redis_conn.brpop("bill_url")[1]
-            bill_id, bill_url = bill_id_and_url_str.split(",")
+            bill_id, bill_url, tracker = bill_id_and_url_str.split(",")
 
             try:
                 # redis获取bill_url

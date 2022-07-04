@@ -80,7 +80,14 @@ def match_tracker(item_element):
     tracker2 = item_element.xpath(".//span[@class='result-item result-tracker']//li[@class='selected last']/text()")
     tracker3 = item_element.xpath(
         ".//span[@class='result-item result-tracker']//li[@class='selected mediumTrack last']/text()")
-    trackers = [tracker1, tracker2, tracker3]
+    tracker4 = item_element.xpath(
+        ".//span[@class='result-item result-tracker']//li[@class='selected mediumTrack']/text()")
+    trackers = [
+        tracker1,
+        tracker2,
+        tracker3,
+        tracker4
+    ]
 
     if any(trackers):
         trackers = map(str, trackers)
@@ -120,38 +127,37 @@ def get_driver_executable_path():
     return get_project_path() + '\\config\\chromedriver.exe'
 
 
-def get_driver():
-    options = uc.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument('whitelisted-ips')
-    options.add_argument("no-sandbox")
-    options.add_argument("disable-dev-shm-usage")
-    options.add_argument("--disable-extensions")
-    options.add_argument("enable-automation")
-    options.add_argument("--disable-browser-side-navigation")
-    options.add_argument("--disable-web-security")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-infobars")
-    options.add_argument("--disable-gpu")
-    driver = uc.Chrome(version_main=103, options=options)
-
-    return driver
-
-
-# def get_driver():
-#     """
-#     获取driver对象
-#     :return:
-#     """
-#     options = uc.ChromeOptions()
-#     options.add_argument('--no-sandbox')
-#     driver = uc.Chrome(
-#         version_main=95,
-#         driver_executable_path=get_driver_executable_path(),
-#         browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
-#         options=options
-#     )
-#     return driver
+def get_driver(system: str = 'linux'):
+    """
+    获取driver对象
+    :return:
+    """
+    if system == 'linux':
+        options = uc.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument('whitelisted-ips')
+        options.add_argument("no-sandbox")
+        options.add_argument("disable-dev-shm-usage")
+        options.add_argument("--disable-extensions")
+        options.add_argument("enable-automation")
+        options.add_argument("--disable-browser-side-navigation")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-gpu")
+        driver = uc.Chrome(version_main=103, options=options)
+        return driver
+    else:
+        options = uc.ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        driver = uc.Chrome(
+            version_main=95,
+            driver_executable_path=get_driver_executable_path(),
+            browser_executable_path='C:\Program Files\Google\Chrome\Application\chrome.exe',
+            options=options
+        )
+        return driver
 
 
 if __name__ == '__main__':
