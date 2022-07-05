@@ -72,7 +72,8 @@ class CrawlTread(threading.Thread):
         :return:
         """
         while True:
-            bill_id, bill_url = self.redis_conn.brpop("bill_url")[1]  # redis获取bill_url
+            bill_id_and_url_str = self.redis_conn.brpop("bill_url")[1]
+            bill_id, bill_url = bill_id_and_url_str.split(",")
             bill_text_url = bill_url + '/text'
             try:
                 if self.count == 0:
