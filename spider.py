@@ -52,6 +52,7 @@ class Spider:
         time.sleep(delay)
         # 法案点进去
         while True:
+            print(max_num)
             time.sleep(5)
             self.page_count += 1
             text = self.driver.page_source

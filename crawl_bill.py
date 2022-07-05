@@ -10,7 +10,7 @@ sql_f = '''
         UPDATE `bill`
         SET `bill_raw_text` = {bill_raw_text}, 
             `bill_raw_text_pre` = {bill_raw_text_pre},
-            `cosponsor_names` = {cosponsor_names},
+            `cosponsor_names` = {cosponsor_names}
         WHERE `id` = {bill_id}
 '''
 
