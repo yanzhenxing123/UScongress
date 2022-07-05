@@ -59,12 +59,12 @@ class Spider:
             logger.info(f"正在爬取第{self.page_count}页...")
             # 解析并插入数据
             self.parse_all(html)
-            if self.count == max_num:
+            if self.count >= max_num:
                 logger.info(" 爬取已完成 done~~~~")
                 self.driver.quit()
                 break
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
-            if not next or self.page_count >= self.max_count or self.count >= max_num:
+            if not next or self.page_count >= self.max_count:
                 logger.info("====== 没找到下一页 ======")
                 self.driver.quit()
                 break
