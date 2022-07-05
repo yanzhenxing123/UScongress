@@ -35,6 +35,7 @@ class CrawlTread(threading.Thread):
         :return:
         """
         url = bill_url + '/' + last_tracker
+        logger.info('url: '  + url)
         self.driver.get(url)
         time.sleep(2.5)
         return utils.get_bill_text(etree.HTML(self.driver.page_source))
@@ -59,6 +60,7 @@ class CrawlTread(threading.Thread):
                 bill_text_html = etree.HTML(self.driver.page_source)
                 bill_raw_text = utils.get_bill_text(bill_text_html)
                 last_tacker_li = bill_text_html.xpath("(//select[@id='textVersion']/option)[last()]/@value")
+                logger.info(last_tacker_li)
 
                 # 请求bill_cosponsor
                 bill_cosponsor_element = self.driver.find_element(By.XPATH,
