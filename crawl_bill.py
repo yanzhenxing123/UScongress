@@ -40,40 +40,49 @@ class CrawlTread(threading.Thread):
         time.sleep(2.5)
         return utils.get_bill_text(etree.HTML(self.driver.page_source))
 
+    def get_bill_cosponsor(self):
+        """
+        获取 bill_cosponsor
+        :return:
+        """
+        bill_cosponsor_element = self.driver.find_element(By.XPATH,
+                                                          value="//body/div[@id='container']/div[1]/main[1]/nav[1]/ul[1]/li[6]/h2[1]/a[1]")
+        bill_cosponsor_element.click()
+        time.sleep(1.5)
+        bill_cosponsor_html = etree.HTML(self.driver.page_source)
+        cosponsor_names = bill_cosponsor_html.xpath("//td[@class='actions']/a/text()")
+        cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"
+        return cosponsor_names_str
+
+    def get_bill_raw_text(self, bill_text_url: str):
+        """
+        获取 bill_raw_text
+        :param bill_text_url:
+        :return: last_tacker_li: 方便后面获取第一版
+        """
+        self.driver.get(bill_text_url)
+        bill_text_html = etree.HTML(self.driver.page_source)
+        bill_raw_text = utils.get_bill_text(bill_text_html)
+        last_tacker_li = bill_text_html.xpath("(//select[@id='textVersion']/option)[last()]/@value")
+        return bill_raw_text, last_tacker_li
+
     def run(self):
         """
         线程要运行的代码
         :return:
         """
         while True:
-            bill_id_and_url_str = self.redis_conn.brpop("bill_url")[1]
-            bill_id, bill_url = bill_id_and_url_str.split(",")
-
+            bill_id, bill_url = self.redis_conn.brpop("bill_url")[1]  # redis获取bill_url
+            bill_text_url = bill_url + '/text'
             try:
-                # redis获取bill_url
-                bill_text_url = bill_url + '/text'
-                # 先请求bill_text
-                self.driver.get(bill_text_url)
                 if self.count == 0:
                     time.sleep(6)
                 time.sleep(2.5)
-                bill_text_html = etree.HTML(self.driver.page_source)
-                bill_raw_text = utils.get_bill_text(bill_text_html)
-                last_tacker_li = bill_text_html.xpath("(//select[@id='textVersion']/option)[last()]/@value")
-
-                # 请求bill_cosponsor
-                bill_cosponsor_element = self.driver.find_element(By.XPATH,
-                                                                  value="//body/div[@id='container']/div[1]/main[1]/nav[1]/ul[1]/li[6]/h2[1]/a[1]")
-                bill_cosponsor_element.click()
-                time.sleep(1.5)
-                bill_cosponsor_html = etree.HTML(self.driver.page_source)
-                cosponsor_names = bill_cosponsor_html.xpath("//td[@class='actions']/a/text()")
-                cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"
-
-                # 获取bill_text_pre
+                bill_raw_text, last_tacker_li = self.get_bill_raw_text(bill_text_url)  # 请求 bill_raw_text
+                cosponsor_names_str = self.get_bill_cosponsor()  # 请求 bill_cosponsor
+                # 获取 bill_raw_text_pre
                 bill_raw_text_pre = self.get_bill_raw_text_pre(bill_text_url,
                                                                last_tacker_li[0]) if last_tacker_li else "''"
-
                 # 插入数据
                 self.insert(bill_raw_text, bill_raw_text_pre, cosponsor_names_str, bill_id)
                 self.count += 1
@@ -102,7 +111,6 @@ class CrawlTread(threading.Thread):
             if cursor.execute(sql):
                 logger.success(f"插入{bill_id}成功")
                 self.mysql_conn.commit()
-                self.redis_conn.delete("bill_url_" + bill_id)  # 删除bill_id
         except Exception as e:
             logger.error(f"插入{bill_id}失败, 原因: {e.__str__()}, sql: {sql}")
         finally:
