@@ -160,5 +160,15 @@ def get_driver(system: str = 'linux'):
         return driver
 
 
+def get_bill_text(html):
+    """
+    获取bill_text
+    :param html:
+    :return:
+    """
+    text = "'" + "".join(html.xpath("//div[@id='bill-summary']//text()")).replace("'", "") + "'"
+    return text
+
+
 if __name__ == '__main__':
     pass

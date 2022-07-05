@@ -9,7 +9,8 @@ from selenium.webdriver.common.by import By
 sql_f = '''
         UPDATE `bill`
         SET `bill_raw_text` = {bill_raw_text}, 
-            `cosponsor_names` = {cosponsor_names}
+            `bill_raw_text_pre` = {bill_raw_text_pre},
+            `cosponsor_names` = {cosponsor_names},
         WHERE `id` = {bill_id}
 '''
 
@@ -26,6 +27,18 @@ class CrawlTread(threading.Thread):
         self.driver = utils.get_driver()
         self.count = 0
 
+    def get_bill_raw_text_pre(self, bill_url: str, last_tracker: str):
+        """
+        获取最先发行的bill版本
+        :param bill_url:
+        :param last_tracker:
+        :return:
+        """
+        url = bill_url + '/' + last_tracker
+        self.driver.get(url)
+        time.sleep(2.5)
+        return utils.get_bill_text(etree.HTML(self.driver.page_source))
+
     def run(self):
         """
         线程要运行的代码
@@ -33,7 +46,7 @@ class CrawlTread(threading.Thread):
         """
         while True:
             bill_id_and_url_str = self.redis_conn.brpop("bill_url")[1]
-            bill_id, bill_url, tracker = bill_id_and_url_str.split(",")
+            bill_id, bill_url = bill_id_and_url_str.split(",")
 
             try:
                 # redis获取bill_url
@@ -44,9 +57,12 @@ class CrawlTread(threading.Thread):
                     time.sleep(6)
                 time.sleep(2.5)
                 bill_text_html = etree.HTML(self.driver.page_source)
-                bill_raw_text = "'" + "".join(
-                    bill_text_html.xpath("//div[@id='bill-summary']//text()")) \
-                    .replace("'", "") + "'"
+                bill_raw_text = utils.get_bill_text(bill_text_html)
+
+                # 获取bill_text_pre
+                last_tacker_li = bill_text_html.xpath("(//select[@id='textVersion']/option)[last()]/@value")
+                bill_raw_text_pre = self.get_bill_raw_text_pre(bill_url, last_tacker_li[0]) if last_tacker_li else ''
+
                 # 请求bill_cosponsor
                 bill_cosponsor_element = self.driver.find_element(By.XPATH,
                                                                   value="//body/div[@id='container']/div[1]/main[1]/nav[1]/ul[1]/li[6]/h2[1]/a[1]")
@@ -56,16 +72,16 @@ class CrawlTread(threading.Thread):
                 cosponsor_names = bill_cosponsor_html.xpath("//td[@class='actions']/a/text()")
                 cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"
                 # 插入数据
-                self.insert(bill_raw_text, cosponsor_names_str, bill_id)
+                self.insert(bill_raw_text, bill_raw_text_pre, cosponsor_names_str, bill_id)
                 self.count += 1
 
             except Exception as ex:
-                logger.error("WebDriver异常" + ex.__str__())
+                logger.error("WebDriver异常: " + ex.__str__())
                 self.driver.quit()
                 self.driver = utils.get_driver()
                 self.count = 0
 
-    def insert(self, bill_raw_text: str, cosponsor_names_str: str, bill_id: str):
+    def insert(self, bill_raw_text: str, bill_raw_text_pre: str, cosponsor_names_str: str, bill_id: str):
         """
         更新数据库
         :param bill_raw_text:
@@ -74,6 +90,7 @@ class CrawlTread(threading.Thread):
         :return:
         """
         sql = sql_f.format(bill_raw_text=bill_raw_text,
+                           bill_raw_text_pre=bill_raw_text_pre,
                            cosponsor_names=cosponsor_names_str,
                            bill_id=bill_id)
         self.mysql_conn.ping(reconnect=True)

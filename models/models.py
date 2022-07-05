@@ -138,7 +138,6 @@ class DataSet(URLModel, Bill):
         finally:
             cursor.close()
 
-
     def insert_bill_url_to_redis(self, bill_id: str, data: Dict):
         """
         插入bill到redis
@@ -146,10 +145,9 @@ class DataSet(URLModel, Bill):
         :param data:
         :return:
         """
-        bill_url, tracker = data.get('bill_url'), data.get('tracker')
-        if bill_url and tracker:
-            redis.lpush("bill_url", bill_id + "," + bill_url, "," + tracker)
-            # redis.set("bill_url_" + bill_id, bill_url)
+        bill_url = data.get('bill_url')
+        if bill_url:
+            redis.lpush("bill_url", bill_id + "," + bill_url)
 
 
 class JsonResponse(object):
