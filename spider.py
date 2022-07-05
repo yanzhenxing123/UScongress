@@ -29,8 +29,8 @@ class Spider:
         self.url = self.get_url(self.url_data)
         self.count = 0
         self.page_count = 0
+        self.max_page_count = 100
         self.max_count = 100
-        self.max_num = 100
 
     def get_url(self, url_data: Dict) -> str:
         """
@@ -48,17 +48,17 @@ class Spider:
         是否完成
         :return:
         """
-        if self.count >= self.max_num or self.page_count >= self.max_count:
-            logger.info(" 爬取已完成 done~~~~")
+        if self.count >= self.max_count or self.page_count >= self.max_page_count:
+            logger.info(f"爬取已完成，共爬取{self.count}条 done~~~~")
             return True
         return False
 
-    def run(self, max_num=100):
+    def run(self, max_count=100):
         """
         发送请求
         :return:
         """
-        self.max_num = max_num
+        self.max_count = max_count
         self.driver.get(self.url)
         delay = 10
         time.sleep(delay)
