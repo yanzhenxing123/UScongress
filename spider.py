@@ -30,6 +30,7 @@ class Spider:
         self.count = 0
         self.page_count = 0
         self.max_count = 100
+        self.max_num = 100
 
     def get_url(self, url_data: Dict) -> str:
         """
@@ -42,17 +43,27 @@ class Spider:
         logger.info(url)
         return url
 
+    def is_done(self):
+        """
+        是否完成
+        :return:
+        """
+        if self.count >= self.max_num or self.page_count >= self.max_count:
+            logger.info(" 爬取已完成 done~~~~")
+            return True
+        return False
+
     def run(self, max_num=100):
         """
         发送请求
         :return:
         """
+        self.max_num = max_num
         self.driver.get(self.url)
         delay = 10
         time.sleep(delay)
         # 法案点进去
         while True:
-            print(max_num)
             time.sleep(5)
             self.page_count += 1
             text = self.driver.page_source
@@ -60,13 +71,9 @@ class Spider:
             logger.info(f"正在爬取第{self.page_count}页...")
             # 解析并插入数据
             self.parse_all(html)
-            if self.count >= max_num:
-                logger.info(" 爬取已完成 done~~~~")
-                self.driver.quit()
-                break
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
-            if not next or self.page_count >= self.max_count:
-                logger.info("====== 没找到下一页 ======")
+            if not next or self.is_done():
+                logger.info("done~")
                 self.driver.quit()
                 break
             next.click()
@@ -83,9 +90,10 @@ class Spider:
         for i in range(len(item_elements)):
             # 解析
             item = self.parse_item(item_elements[i])
+            if self.is_done():
+                break
             # 插入数据库
             self.insert(item, self.url_data)
-        # self.crawl_bill_txt_and_cosponsors()
 
     def parse_item(self, item_element):
         """
