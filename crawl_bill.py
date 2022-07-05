@@ -97,6 +97,7 @@ class CrawlTread(threading.Thread):
     def insert(self, bill_raw_text: str, bill_raw_text_pre: str, cosponsor_names_str: str, bill_id: str):
         """
         更新数据库
+        :param bill_raw_text_pre:
         :param bill_raw_text:
         :param cosponsor_names_str:
         :param bill_id:
