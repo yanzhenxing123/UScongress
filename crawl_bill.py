@@ -27,15 +27,15 @@ class CrawlTread(threading.Thread):
         self.driver = utils.get_driver()
         self.count = 0
 
-    def get_bill_raw_text_pre(self, bill_url: str, last_tracker: str):
+    def get_bill_raw_text_pre(self, bill_text_url: str, last_tracker: str):
         """
         获取最先发行的bill版本
         :param bill_url:
         :param last_tracker:
         :return:
         """
-        url = bill_url + '/' + last_tracker
-        logger.info('url: '  + url)
+        url = bill_text_url + '/' + last_tracker
+        logger.info('bill_text_pre_url: ' + url)
         self.driver.get(url)
         time.sleep(2.5)
         return utils.get_bill_text(etree.HTML(self.driver.page_source))
@@ -60,7 +60,6 @@ class CrawlTread(threading.Thread):
                 bill_text_html = etree.HTML(self.driver.page_source)
                 bill_raw_text = utils.get_bill_text(bill_text_html)
                 last_tacker_li = bill_text_html.xpath("(//select[@id='textVersion']/option)[last()]/@value")
-                logger.info(last_tacker_li)
 
                 # 请求bill_cosponsor
                 bill_cosponsor_element = self.driver.find_element(By.XPATH,
@@ -72,7 +71,8 @@ class CrawlTread(threading.Thread):
                 cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"
 
                 # 获取bill_text_pre
-                bill_raw_text_pre = self.get_bill_raw_text_pre(bill_url, last_tacker_li[0]) if last_tacker_li else ''
+                bill_raw_text_pre = self.get_bill_raw_text_pre(bill_text_url,
+                                                               last_tacker_li[0]) if last_tacker_li else ''
 
                 # 插入数据
                 self.insert(bill_raw_text, bill_raw_text_pre, cosponsor_names_str, bill_id)
