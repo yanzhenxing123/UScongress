@@ -15,8 +15,8 @@ Kafka:
 Mysql:
   user: "root"
   pwd: "209243"
-#  host: "127.0.0.1"
-  host: "42.192.178.84"
+  host: "127.0.0.1"
+#  host: "42.192.178.84"
   port: 3306
   database: "us_congress"
 

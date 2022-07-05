@@ -42,7 +42,7 @@ class Spider:
         logger.info(url)
         return url
 
-    def run(self, max_num=200):
+    def run(self, max_num=100):
         """
         发送请求
         :return:
@@ -64,7 +64,7 @@ class Spider:
                 self.driver.quit()
                 break
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
-            if not next or self.page_count >= self.max_count:
+            if not next or self.page_count >= self.max_count or self.count >= max_num:
                 logger.info("====== 没找到下一页 ======")
                 self.driver.quit()
                 break
