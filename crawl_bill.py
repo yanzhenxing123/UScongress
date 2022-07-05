@@ -72,7 +72,7 @@ class CrawlTread(threading.Thread):
 
                 # 获取bill_text_pre
                 bill_raw_text_pre = self.get_bill_raw_text_pre(bill_text_url,
-                                                               last_tacker_li[0]) if last_tacker_li else ''
+                                                               last_tacker_li[0]) if last_tacker_li else "''"
 
                 # 插入数据
                 self.insert(bill_raw_text, bill_raw_text_pre, cosponsor_names_str, bill_id)
