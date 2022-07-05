@@ -58,10 +58,7 @@ class CrawlTread(threading.Thread):
                 time.sleep(2.5)
                 bill_text_html = etree.HTML(self.driver.page_source)
                 bill_raw_text = utils.get_bill_text(bill_text_html)
-
-                # 获取bill_text_pre
                 last_tacker_li = bill_text_html.xpath("(//select[@id='textVersion']/option)[last()]/@value")
-                bill_raw_text_pre = self.get_bill_raw_text_pre(bill_url, last_tacker_li[0]) if last_tacker_li else ''
 
                 # 请求bill_cosponsor
                 bill_cosponsor_element = self.driver.find_element(By.XPATH,
@@ -71,6 +68,10 @@ class CrawlTread(threading.Thread):
                 bill_cosponsor_html = etree.HTML(self.driver.page_source)
                 cosponsor_names = bill_cosponsor_html.xpath("//td[@class='actions']/a/text()")
                 cosponsor_names_str = "'" + str(cosponsor_names).replace("'", "") + "'" if cosponsor_names else "''"
+
+                # 获取bill_text_pre
+                bill_raw_text_pre = self.get_bill_raw_text_pre(bill_url, last_tacker_li[0]) if last_tacker_li else ''
+
                 # 插入数据
                 self.insert(bill_raw_text, bill_raw_text_pre, cosponsor_names_str, bill_id)
                 self.count += 1
