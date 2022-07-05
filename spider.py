@@ -62,15 +62,13 @@ class Spider:
         self.driver.get(self.url)
         delay = 10
         time.sleep(delay)
-        # 法案点进去
         while True:
             time.sleep(5)
             self.page_count += 1
             text = self.driver.page_source
             html = etree.HTML(text)
             logger.info(f"正在爬取第{self.page_count}页...")
-            # 解析并插入数据
-            self.parse_all(html)
+            self.parse_all(html)  # 解析并插入数据
             next = self.driver.find_element(by=By.XPATH, value="//a[@class='next'][last()]")
             if not next or self.is_done():
                 logger.info("done~")
@@ -90,10 +88,9 @@ class Spider:
         for i in range(len(item_elements)):
             # 解析
             item = self.parse_item(item_elements[i])
+            self.insert(item, self.url_data)  # 插入数据库
             if self.is_done():
                 break
-            # 插入数据库
-            self.insert(item, self.url_data)
 
     def parse_item(self, item_element):
         """
